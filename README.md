@@ -1,4 +1,10 @@
 Реализовано решение на 8 баллов
+
+
 Построен лабиринт 15*15, в котором при запуске программы подсвечиваются проходимые и непроходимые клетки и отрисовывается кратчайший путь, найденный с помощью алгоритма Дейкстры
-В .gitignore добавлены временные и пользовательские файлы (Binaries, Build, DerivedDataCache, Intermediate, Saved, Platforms) во избежании конфликта на компьютере проверяющего.
+
+
+В .gitignore добавлены временные и пользовательские файлы (Binaries, Build, DerivedDataCache, Intermediate, Saved, Platforms) во избежании конфликта на компьютере проверяющего
+
+
 Логика алгоритмов лежит в Source/Maze/Private/APathfinder.cpp и Source/Maze/Public/APathfinder.h
