@@ -13,18 +13,17 @@ AAPathfinder::AAPathfinder()
     RootComponent = Root;
 }
 
+// начало игры и вызов функций
 void AAPathfinder::BeginPlay()
 {
     Super::BeginPlay();
 
-    UE_LOG(LogTemp, Warning, TEXT("AAPathfinder BeginPlay: %s"), *GetName());
-
     CreateGridCells();
     DrawGrid();
-    
+//    
     if (!StartPoint || !EndPoint)
     {
-        UE_LOG(LogTemp, Error, TEXT("Set StartPoint and EndPoint in AAPathfinder details!"));
+        UE_LOG(LogTemp, Error, TEXT("Начальная и конечная точки совпадают"));
         return;
     }
 
@@ -38,7 +37,7 @@ void AAPathfinder::BeginPlay()
         TArray<int32> Path;
         if (BuildPath(EndIndex, Path))
         {
-            UE_LOG(LogTemp, Warning, TEXT("Path length=%d"), Path.Num());
+            UE_LOG(LogTemp, Warning, TEXT("Длина кратчайшего пути=%d"), Path.Num());
             DrawPath(Path);
         }
         else
@@ -60,6 +59,7 @@ void AAPathfinder::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
 }
 
+// делаю трассировку, проверяю где клетки заняты, а где нет
 bool AAPathfinder::IsCellBlockedByWall(const FVector& CellCenter) const
 {
     const FVector HalfSize(CellSize * 0.45f, CellSize * 0.45f, 250.f);
@@ -102,6 +102,7 @@ bool AAPathfinder::IsCellBlockedByWall(const FVector& CellCenter) const
     return false;
 }
 
+// создается поле клеток
 void AAPathfinder::CreateGridCells()
 {
     GridCells.Empty();
@@ -131,6 +132,7 @@ void AAPathfinder::CreateGridCells()
     }
 }
 
+// отрисовываю поле с учетом проходимости/непроходимости клеток
 void AAPathfinder::DrawGrid()
 {
     UWorld* W = GetWorld();
@@ -189,6 +191,7 @@ void AAPathfinder::DrawGrid()
     }
 }
 
+// поиск ближайших ячеек
 int32 AAPathfinder::FindClosestCellIndex(const FVector& WorldPos) const
 {
     const FVector Origin = GetActorLocation();
@@ -203,6 +206,7 @@ int32 AAPathfinder::FindClosestCellIndex(const FVector& WorldPos) const
     return GridCells.IsValidIndex(Index) ? Index : -1;
 }
 
+// собираю всех соседей
 void AAPathfinder::GetNeighbors(int32 Index, TArray<int32>& Out) const
 {
     Out.Reset();
@@ -229,6 +233,7 @@ void AAPathfinder::GetNeighbors(int32 Index, TArray<int32>& Out) const
     }
 }
 
+// запуск дейстры
 bool AAPathfinder::RunDijkstra(int32 StartIndex, int32 EndIndex)
 {
     if (!GridCells.IsValidIndex(StartIndex) || !GridCells.IsValidIndex(EndIndex))
@@ -245,7 +250,7 @@ bool AAPathfinder::RunDijkstra(int32 StartIndex, int32 EndIndex)
     }
 
     GridCells[StartIndex].Dist = 0.f;
-
+// Дейкстра
     while (true)
     {
         int32 Current = -1;
@@ -262,9 +267,9 @@ bool AAPathfinder::RunDijkstra(int32 StartIndex, int32 EndIndex)
                 Current = i;
             }
         }
-
-        if (Current == -1) return false;        // недостижимо
-        if (Current == EndIndex) return true;   // нашли
+        
+        if (Current == -1) return false; // заново
+        if (Current == EndIndex) return true; // нашли выход
 
         GridCells[Current].bVisited = true;
 
@@ -275,7 +280,7 @@ bool AAPathfinder::RunDijkstra(int32 StartIndex, int32 EndIndex)
         {
             if (GridCells[N].bVisited) continue;
 
-            const float NewDist = GridCells[Current].Dist + 1.f; // вес = 1
+            const float NewDist = GridCells[Current].Dist + 1.f; // прибавляю вес
             if (NewDist < GridCells[N].Dist)
             {
                 GridCells[N].Dist = NewDist;
@@ -285,12 +290,12 @@ bool AAPathfinder::RunDijkstra(int32 StartIndex, int32 EndIndex)
     }
 }
 
+// восстановление пути после Дейкстры
 bool AAPathfinder::BuildPath(int32 EndIndex, TArray<int32>& OutPath) const
 {
     OutPath.Reset();
     if (!GridCells.IsValidIndex(EndIndex)) return false;
 
-    // если End == Start, ParentIndex будет -1, поэтому отдельно обработаем:
     if (GridCells[EndIndex].Dist == 0.f)
     {
         OutPath.Add(EndIndex);
@@ -310,6 +315,7 @@ bool AAPathfinder::BuildPath(int32 EndIndex, TArray<int32>& OutPath) const
     return OutPath.Num() > 0;
 }
 
+// отрисовка пути
 void AAPathfinder::DrawPath(const TArray<int32>& Path) const
 {
     if (!bDrawPath) return;

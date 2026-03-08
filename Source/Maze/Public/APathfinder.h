@@ -5,7 +5,7 @@
 #include "Engine/TargetPoint.h"
 #include "APathfinder.generated.h"
 
-
+// сетка
 USTRUCT(BlueprintType)
 struct FGridCell
 {
